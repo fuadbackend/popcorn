@@ -59,8 +59,17 @@ export default function App() {
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
 
-  const tempQuery = "interstellar";
+  // const tempQuery = "interstellar";
+
+  function handleSelectMovie(id) {
+    setSelectedId(id);
+  }
+
+  function handleCloseMovie() {
+    setSelectedId(null);
+  }
 
   useEffect(
     function () {
@@ -115,14 +124,21 @@ export default function App() {
 
         <Box>
           {isLoading && <Loader />}
-          {!isLoading && !error && <Movielist movies={movies} />}
+          {!isLoading && !error && (
+            <Movielist movies={movies} onSelectMovie={handleSelectMovie} />
+          )}
           {error && <ErrorMessage message={error} />}
         </Box>
 
         <Box>
-          <WatchedSummary watched={watched} />
-
-          <WatchedMoviesList watched={watched} />
+          {selectedId ? (
+            <MovieDetails selectedId={selectedId} onCloseMovie={handleCloseMovie}/>
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedMoviesList watched={watched} />
+            </>
+          )}
         </Box>
 
         <StarRating />
@@ -221,29 +237,33 @@ function Box({ children }) {
 //   );
 // }
 
-function Movielist({ movies }) {
+function Movielist({ movies, onSelectMovie }) {
   return (
-    <ul className="list">
+    <ul className="list list-movies">
       {movies?.map((movie) => (
-        <Movie movies={movie} key={movie.imdbID} />
+        <Movie movie={movie} key={movie.imdbID} onSelectMovie={onSelectMovie}/>
       ))}
     </ul>
   );
 }
 
-function Movie({ movies, key }) {
+function Movie({ movie, onSelectMovie }) {
   return (
-    <li>
-      <img src={movies.Poster} alt={`${movies.Title} poster`} />
-      <h3>{movies.Title}</h3>
+    <li onClick={() => onSelectMovie(movie.imdbID)}>
+      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.Title}</h3>
       <div>
         <p>
           <span>🗓</span>
-          <span>{movies.Year}</span>
+          <span>{movie.Year}</span>
         </p>
       </div>
     </li>
   );
+}
+
+function MovieDetails({ selectedId, onCloseMovie }) {
+  return <div className="details">{selectedId}</div>;
 }
 
 function WatchedSummary({ watched }) {
